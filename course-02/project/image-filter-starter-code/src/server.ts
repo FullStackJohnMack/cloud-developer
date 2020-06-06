@@ -1,14 +1,15 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
+import { resolveSoa } from 'dns';
 
 (async () => {
 
   // Init the Express application
   const app = express();
 
-  // Set the network port
-  const port = process.env.PORT || 8082;
+  // Set the network port 
+  const port = process.env.PORT || 8080;
   
   // Use the body parser middleware for post requests
   app.use(bodyParser.json());
@@ -27,8 +28,25 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   // RETURNS
   //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
 
-  /**************************************************************************** */
 
+  app.get("/filteredimage", async ( req, res) => {
+      const { url } = req.query;
+
+      if (!url) {
+        res.status(400).send("Not a valid URL");
+      }
+
+      try {
+        const post = await filterImageFromURL(url);
+        
+        await res.status(200).sendFile(post, (e) => {
+          if (e) return res.status(422).send("Unable to filter image");
+          deleteLocalFiles([post]);
+        });
+      } catch (e) {
+        res.status(422).send("Unable to find / filter image");
+      }
+  });
   //! END @TODO1
   
   // Root Endpoint
