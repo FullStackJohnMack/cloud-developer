@@ -30,14 +30,14 @@ import { resolveSoa } from 'dns';
 
 
   app.get("/filteredimage", async ( req, res) => {
-      const { url } = req.query;
+      const { image_url } = req.query;
 
-      if (!url) {
+      if (!image_url) {
         res.status(400).send("Not a valid URL");
       }
 
       try {
-        const post = await filterImageFromURL(url);
+        const post = await filterImageFromURL(image_url);
         
         await res.status(200).sendFile(post, (e) => {
           if (e) return res.status(422).send("Unable to filter image");
